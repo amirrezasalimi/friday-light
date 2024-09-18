@@ -1,0 +1,25 @@
+{
+  "name": "fl",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build ./src/index.ts  --target node --outdir ./out --out",
+    "dev": "bun build ./src/index.ts  --target node --outdir ./out --out --watch"
+  },
+  "bin": {
+    "fl": "out/index.js"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^11.0.0",
+    "openai": "^4.57.0"
+  }
+}

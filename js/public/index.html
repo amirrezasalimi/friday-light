@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style scoped>
+      pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="flex bg-[#343541] h-screen text-gray-100">
+        <!-- Collapsible Sidebar -->
+        <div
+          :class="['bg-[#202123] transition-all duration-300 ease-in-out', sidebarOpen ? 'w-64' : 'w-0']"
+        >
+          <div class="flex flex-col h-full" v-show="sidebarOpen">
+            <div class="p-4">
+              <button
+                @click="newChat"
+                class="flex items-center border-gray-700 hover:bg-gray-700 p-3 border rounded-md w-full text-left transition-colors duration-200"
+              >
+                <svg
+                  class="mr-3 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  ></path>
+                </svg>
+                New chat
+              </button>
+            </div>
+            <div class="flex-grow space-y-2 px-3 py-2 overflow-y-auto">
+              <div
+                v-for="(chat, index) in recentChats"
+                :key="index"
+                class="hover:bg-gray-700 p-3 rounded-md text-sm transition-colors duration-200 cursor-pointer"
+              >
+                {{ chat }}
+              </div>
+            </div>
+            <div class="border-gray-700 p-4 border-t">
+              <button
+                class="flex items-center hover:bg-gray-700 p-3 rounded-md w-full text-left text-sm transition-colors duration-200"
+              >
+                <svg
+                  class="mr-3 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  ></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  ></path>
+                </svg>
+                Settings
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex flex-col flex-grow">
+          <!-- Header -->
+          <header
+            class="flex justify-between items-center border-gray-700 bg-[#343541] p-2 border-b"
+          >
+            <button
+              @click="toggleSidebar"
+              class="hover:bg-gray-700 p-2 rounded-md transition-colors duration-200"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
+              </svg>
+            </button>
+            <div class="font-semibold">ChatGPT</div>
+            <div class="flex space-x-2">
+              <button
+                class="hover:bg-gray-700 p-2 rounded-md transition-colors duration-200"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                class="hover:bg-gray-700 p-2 rounded-md transition-colors duration-200"
+              >
+                <div
+                  class="flex justify-center items-center bg-green-500 rounded-full w-6 h-6 font-semibold text-xs"
+                >
+                  AM
+                </div>
+              </button>
+            </div>
+          </header>
+
+          <!-- Chat area -->
+          <div class="flex-grow space-y-6 p-4 overflow-y-auto">
+            <div
+              v-for="(message, index) in chatMessages"
+              :key="index"
+              class="space-y-2 mx-auto max-w-3xl"
+            >
+              <div
+                class="flex items-start"
+                :class="{ 'justify-end': message.type === 'user' }"
+              >
+                <div
+                  class="bg-[#444654] p-4 rounded-lg text-sm"
+                  :class="{ 'bg-[#343541]': message.type === 'user' }"
+                >
+                  <div
+                    v-if="message.content"
+                    v-html="formatMessage(message.content)"
+                  ></div>
+                  <div
+                    v-if="message.code"
+                    class="bg-[#1e1e1e] mt-2 p-2 rounded-md"
+                  >
+                    <pre><code>{{ message.code }}</code></pre>
+                  </div>
+                  <ul
+                    v-if="message.list"
+                    class="space-y-1 mt-2 list-disc list-inside"
+                  >
+                    <li
+                      v-for="(item, itemIndex) in message.list"
+                      :key="itemIndex"
+                    >
+                      {{ item }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div v-if="message.actions" class="flex justify-center space-x-2">
+                <button
+                  v-for="action in message.actions"
+                  :key="action"
+                  class="text-gray-400 text-xs hover:text-white transition-colors duration-200"
+                >
+                  {{ action }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input area -->
+          <div class="bg-[#343541] p-4">
+            <div class="mx-auto max-w-3xl">
+              <div class="relative">
+                <textarea
+                  v-model="userInput"
+                  @focus="showCommands = true"
+                  @blur="hideCommandsDelayed"
+                  class="bg-[#40414f] p-4 pr-12 rounded-lg focus:ring-2 focus:ring-blue-500 w-full text-sm resize-none focus:outline-none"
+                  rows="1"
+                  placeholder="Send a message"
+                ></textarea>
+                <button class="right-2 bottom-2 absolute p-1 rounded-md">
+                  <svg
+                    class="w-6 h-6 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                    ></path>
+                  </svg>
+                </button>
+                <div
+                  v-if="showCommands"
+                  class="bottom-full left-0 absolute border-gray-700 bg-[#202123] shadow-lg mb-2 p-2 border rounded-lg w-full"
+                >
+                  <ul class="space-y-1">
+                    <li
+                      v-for="command in commands"
+                      :key="command.name"
+                      class="hover:bg-gray-700 p-2 rounded-md text-gray-300 text-sm transition-colors duration-200"
+                    >
+                      {{ command.name }} - {{ command.description }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <p class="mt-2 text-center text-gray-400 text-xs">
+                ChatGPT can make mistakes. Consider checking important
+                information.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          sidebarOpen: true,
+          recentChats: [
+            "Iframe Authentication Isolation",
+            "Extracting Dir and Module",
+            "Extracting File Content",
+            "Recursive File Bundling",
+            "Default Value Issue",
+            "Refactor JS Directory Handling",
+            "Build Command Explained",
+            "Bun Project Structure Help",
+            "Lua Script File Parsing",
+            "CLI Apps with Lua",
+          ],
+          chatMessages: [
+            {
+              type: "ai",
+              content: "Here are the key points:",
+              list: [
+                "Recursive Processing: The `processPath` function handles both files and directories. It uses recursion to process directories by calling itself for each path within the directory.",
+                "Path Handling: The `baseRelativePath` parameter ensures that the relative paths are correctly calculated for nested files and directories.",
+                "Error Handling: If an error occurs during processing, it is logged, and the error is thrown to be handled by the caller.",
+              ],
+              code: '// Example code\nfunction processPath(path, baseRelativePath = "") {\n  // ... implementation ...\n}',
+            },
+            {
+              type: "ai",
+              content:
+                "This single-method approach maintains the recursive nature of the bundling process while keeping all the logic encapsulated within `bundleModule`.",
+            },
+            {
+              type: "user",
+              content:
+                "well, check if directory is empty write - is empty as content otherwise search it",
+            },
+            {
+              type: "ai",
+              content:
+                "To handle directories appropriately by checking if they are empty and updating the content accordingly, you can modify the `bundleModule` method. Specifically, you should:",
+              list: [
+                "Check if a directory is empty.",
+                'If it is empty, set its content to "- is empty".',
+                "If not, recursively process its contents.",
+              ],
+            },
+          ],
+          userInput: "",
+          showCommands: false,
+          commands: [
+            { name: "/help", description: "Show available commands" },
+            { name: "/clear", description: "Clear chat history" },
+            { name: "/topic [name]", description: "Change conversation topic" },
+          ],
+        };
+      },
+      methods: {
+        formatMessage(content) {
+          return content.replace(
+            /`([^`]+)`/g,
+            '<code class="bg-[#1e1e1e] px-1 rounded">$1</code>'
+          );
+        },
+        hideCommandsDelayed() {
+          setTimeout(() => {
+            this.showCommands = false;
+          }, 200);
+        },
+        toggleSidebar() {
+          this.sidebarOpen = !this.sidebarOpen;
+        },
+        newChat() {
+          // Implement new chat functionality
+          console.log("New chat");
+        },
+      },
+    }).mount("#app");
+  </script>
+</html>
